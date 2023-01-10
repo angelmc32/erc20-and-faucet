@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.15;
 
 import "forge-std/Test.sol";
 import "../src/ERC20Token.sol";
@@ -134,5 +134,28 @@ contract ERC20TokenTest is Test {
         vm.stopPrank();
         myERC20Token.transferFrom(user0x2, user0x3, testAmount);
         assertEq(myERC20Token.balanceOf(user0x3), testAmount);
+    }
+
+    function testOnlyOwnerCanSetMinterRole() public {
+        vm.startPrank(user0x2);
+        vm.expectRevert(
+            "ERC20Token: Only the contract owner can call this function"
+        );
+        myERC20Token.setMinterRole(user0x2);
+        vm.stopPrank();
+    }
+
+    function testSetMinterRole() public {
+        myERC20Token.setMinterRole(user0x2);
+        vm.startPrank(user0x2);
+        myERC20Token.mint(user0x3, testAmount);
+        vm.stopPrank();
+        assertEq(myERC20Token.balanceOf(user0x3), testAmount);
+    }
+
+    function testGetRoleMember() public {
+        bytes32 minterRole = keccak256("MINTER_ROLE");
+        myERC20Token.setMinterRole(user0x2);
+        assertEq(myERC20Token.getRoleMember(minterRole, 1), user0x2);
     }
 }

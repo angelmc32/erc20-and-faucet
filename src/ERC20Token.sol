@@ -26,6 +26,10 @@ contract ERC20Token is ERC20Capped, ERC20PresetMinterPauser {
         _mint(owner, initialSupply_ * 10**uint256(decimals()));
     }
 
+    function setMinterRole(address newMinterAddress_) public onlyOwner {
+        _setupRole(MINTER_ROLE, newMinterAddress_);
+    }
+
     function mint(address to, uint256 amount)
         public
         virtual
@@ -56,5 +60,13 @@ contract ERC20Token is ERC20Capped, ERC20PresetMinterPauser {
         uint256 amount
     ) internal virtual override(ERC20, ERC20PresetMinterPauser) {
         super._beforeTokenTransfer(from, to, amount);
+    }
+
+    modifier onlyOwner() {
+        require(
+            msg.sender == owner,
+            "ERC20Token: Only the contract owner can call this function"
+        );
+        _;
     }
 }
